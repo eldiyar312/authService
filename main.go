@@ -1,37 +1,46 @@
 package main
 
 import (
-	"authService/utils"
+	"github.com/authService/token"
+	"fmt"
 	"net/http"
+	"os"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
 
 func main () {
-
-    router := httprouter.New()
-
-    router.POST("/api/token", Index)
-
-    // cors enable
-    handler := cors.Default().Handler(router)
-    http.ListenAndServe(":8080", handler)
-}
-
-
-func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
     
-    // allowedHeaders := "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization,X-CSRF-Token"
+    godotenv.Load() // Загрузить файл .env
+    var (
+        port = os.Getenv("PORT")
+        originAllowed = []string{os.Getenv("ORIGIN_ALLOWED")}
+    )
 
-    w.Header().Set("Access-Control-Allow-Origin", "*")
-    // w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-    // w.Header().Set("Access-Control-Allow-Headers", allowedHeaders)
-    // w.Header().Set("Access-Control-Expose-Headers", "Authorization")
+    router := mux.NewRouter()
+    http.Handle("/", router)
 
-    respone := utils.Message(true, "hello")
 
-    w.Header().Add("Content-Type", "application/json")
+    // ROUTES
+    router.HandleFunc("/api/token", token.GenerateTokens).Methods("POST")
 
-    utils.Respond(w, respone)
+
+    // CORS
+    handler := cors.Default().Handler(router)
+    
+    handler = cors.New(cors.Options{
+        AllowedOrigins: originAllowed,
+        AllowCredentials: true,
+    }).Handler(router)
+
+
+    // START
+    fmt.Println(port)
+    err := http.ListenAndServe(":" + port, handler)
+
+	if err != nil {
+		fmt.Print(err)
+	}
 }
