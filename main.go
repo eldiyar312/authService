@@ -1,8 +1,12 @@
 package main
 
 import (
-	"github.com/authService/token"
+	tokens "authService/route/TGenerateById"
+	refresh "authService/route/TGenerateByRefreshT"
+	delete "authService/route/deleteRefreshT"
+	deleteTokens "authService/route/deleteTokens"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -12,8 +16,11 @@ import (
 )
 
 func main () {
-    
-    godotenv.Load() // Загрузить файл .env
+    // load .env file
+    err := godotenv.Load()
+    if err != nil {
+      log.Fatal("Error loading .env file")
+    }
     var (
         port = os.Getenv("PORT")
         originAllowed = []string{os.Getenv("ORIGIN_ALLOWED")}
@@ -24,7 +31,10 @@ func main () {
 
 
     // ROUTES
-    router.HandleFunc("/api/token", token.GenerateTokens).Methods("POST")
+    router.HandleFunc("/api/token", tokens.GenerateTokens).Methods("POST")
+    router.HandleFunc("/api/refresh", refresh.Refreshing).Methods("POST")
+    router.HandleFunc("/api/delete/refresh", delete.DeleteRefreshT).Methods("POST")
+    router.HandleFunc("/api/delete/all/refresh", deleteTokens.DeleteTokens).Methods("POST")
 
 
     // CORS
@@ -38,9 +48,9 @@ func main () {
 
     // START
     fmt.Println(port)
-    err := http.ListenAndServe(":" + port, handler)
+    log := http.ListenAndServe(":" + port, handler)
 
-	if err != nil {
-		fmt.Print(err)
+	if log != nil {
+		fmt.Print(log)
 	}
 }
