@@ -14,7 +14,7 @@ func DeleteRefreshT (w http.ResponseWriter, r *http.Request) {
 
 	type user struct {
 		Id string
-		RefreshId string
+		TokenId string
 	}
 
 	var uRefId user
@@ -24,7 +24,7 @@ func DeleteRefreshT (w http.ResponseWriter, r *http.Request) {
 	// Generate
 	uID, _ := primitive.ObjectIDFromHex(uRefId.Id)
 
-	uRefID, _ := primitive.ObjectIDFromHex(uRefId.RefreshId)
+	uRefID, _ := primitive.ObjectIDFromHex(uRefId.TokenId)
 
 
 	// remove refresh token

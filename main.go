@@ -10,6 +10,7 @@ import (
 	refresh "github.com/authService/token/route/TGenerateByRefreshT"
 	delete "github.com/authService/token/route/deleteRefreshT"
 	deleteTokens "github.com/authService/token/route/deleteTokens"
+	"github.com/authService/token/route/home"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -32,6 +33,7 @@ func main () {
 
 
     // ROUTES
+    router.HandleFunc("/", home.RespondDoc).Methods("GET")
     router.HandleFunc("/api/token", tokens.GenerateTokens).Methods("POST")
     router.HandleFunc("/api/refresh", refresh.Refreshing).Methods("POST")
     router.HandleFunc("/api/delete/refresh", delete.DeleteRefreshT).Methods("POST")
