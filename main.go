@@ -1,15 +1,15 @@
 package main
 
 import (
-	refresh "authService/route/TGenerateByRefreshT"
-	delete "authService/route/deleteRefreshT"
-	deleteTokens "authService/route/deleteTokens"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	tokens "github.com/authService/token/route/TGenerateById"
+	refresh "github.com/authService/token/route/TGenerateByRefreshT"
+	delete "github.com/authService/token/route/deleteRefreshT"
+	deleteTokens "github.com/authService/token/route/deleteTokens"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"

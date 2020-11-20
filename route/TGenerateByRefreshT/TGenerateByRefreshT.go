@@ -1,9 +1,10 @@
 package TGenerateByRefreshT
 
 import (
-	"authService/utils"
 	"encoding/json"
 	"net/http"
+
+	"github.com/authService/token/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
