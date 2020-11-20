@@ -27,21 +27,19 @@ func DeleteRefreshT (w http.ResponseWriter, r *http.Request) {
 	uRefID, _ := primitive.ObjectIDFromHex(uRefId.RefreshId)
 
 
-	filter := map[string]interface{}{"_id": uID}
+	// remove refresh token
+	result := utils.DeleteRefresh(uID, uRefID)
 
-	update := map[string]interface{}{
-		"$pull": map[string]interface{}{
-			"tokens": map[string]interface{}{
-				"id": uRefID,
-			},
-		},
+	if result.MatchedCount == 0 {
+
+		message := utils.Message(false, "not found token")
+		
+		utils.Respond(w, message)
+	} else {
+		
+		// send user
+		message := utils.Message(true, "success remove token")
+	
+		utils.Respond(w, message)
 	}
-
-	utils.MUpdateOne("users", "accounts", filter, update)
-
-
-	// send user
-	message := utils.Message(true, "success remove token")
-
-	utils.Respond(w, message)
 }

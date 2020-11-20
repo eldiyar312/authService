@@ -23,15 +23,11 @@ func Refreshing (w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&uRef)
 
 	
-	// Search for check match refresh tokens
-	uID, _ := primitive.ObjectIDFromHex(uRef.Id)
-
-	// searchRefreshT(uID, uRef.RefreshToken)
-
-	
 	// Generating
 	generateObjectID := primitive.NewObjectID()
 
+	uID, _ := primitive.ObjectIDFromHex(uRef.Id)
+	
 	uRefID, _ := primitive.ObjectIDFromHex(uRef.IdRefreshToken)
 
 	// Генерируем токены, в зависимости от токенов
@@ -43,61 +39,50 @@ func Refreshing (w http.ResponseWriter, r *http.Request) {
 	
 
 	// Save in DB as bycrypt hash
+	filterUID := map[string]interface{}{"_id": uID}
+
 	newData := map[string]interface{}{
 		"id": generateObjectID,
 		"access": accessToken,
 		"refresh": hashRefresh,
 	}
 
-	filter := map[string]interface{}{"_id": uID}
-
-	// update token in DB
-	utils.MUpdateOne("users", "accounts", filter, newData)
-
-
-	// delete this user refresh token (uRefID)
-	deleteRefresh(uID, uRefID)
-
-
-	// send user
-	type Tokens struct {
-		ID primitive.ObjectID
-		Access string
-		Refresh string
-	}
-
-	tokens := Tokens{generateObjectID, accessToken, refreshToken}
-
-	json.NewEncoder(w).Encode(tokens)
-}
-
-// delete refresh token для того чтобы запретить повторное использование )
-func deleteRefresh (uID primitive.ObjectID, uRefID primitive.ObjectID) {
-	filter := map[string]interface{}{"_id": uID}
-
 	update := map[string]interface{}{
-		"$pull": map[string]interface{}{
-			"tokens": map[string]interface{}{
-				"id": uRefID,
-			},
+		"$push": map[string]interface{}{
+			"tokens": newData,
 		},
 	}
 
-	utils.MUpdateOne("users", "accounts", filter, update)
-}
+	// create new access and refresh tokens in DB
+	resultUpdate := utils.MUpdateOne("users", "accounts", filterUID, update)
 
-// // search user refresh token for проверки бытья :D
-// func searchRefreshT(uID primitive.ObjectID, uRefID string) {
+	if resultUpdate.MatchedCount == 0 {
 
-// 	hashRefresh, _ := utils.HashPassword(uRefID)
-
-// 	fmt.Println(uID)
-// 	fmt.Println(hashRefresh)
-
-// 	filterRefT := map[string]interface{}{"_id": uID, "tokens": []interface{}{map[string]interface{}{"refresh": hashRefresh}}}
-
-// 	resultFind := utils.MFindOne("users", "accounts", filterRefT)
-
-// 	fmt.Println(resultFind)
+		message := utils.Message(false, "not found user")
+		
+		utils.Respond(w, message)
+	} else {
+		
+		// delete this user refresh token (uRefID)
+		resultDelete := utils.DeleteRefresh(uID, uRefID)
+		
+		if resultDelete.MatchedCount == 0 {
+			
+			message := utils.Message(false, "not found token")
+			
+			utils.Respond(w, message)
+		} else {
 	
-// }
+			// send user
+			type Tokens struct {
+				ID primitive.ObjectID
+				Access string
+				Refresh string
+			}
+	
+			tokens := Tokens{generateObjectID, accessToken, refreshToken}
+	
+			json.NewEncoder(w).Encode(tokens)
+		}
+	}
+}

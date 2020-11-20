@@ -10,6 +10,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -27,7 +28,6 @@ func Respond(w http.ResponseWriter, data map[string] interface{})  {
 
 	json.NewEncoder(w).Encode(data)
 }
-
 
 
 func AccessTokenGenerate (something string) string {
@@ -71,7 +71,34 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func MUpdateOne (db string, table string, filter map[string]interface{}, update map[string]interface{}) {
+// delete refresh token для того чтобы запретить повторное использование )
+func DeleteRefresh (
+	uID primitive.ObjectID,
+	uRefID primitive.ObjectID,
+) *mongo.UpdateResult {
+
+	filterUID := map[string]interface{}{"_id": uID}
+
+	update := map[string]interface{}{
+		"$pull": map[string]interface{}{
+			"tokens": map[string]interface{}{
+				"id": uRefID,
+			},
+		},
+	}
+	
+
+	result := MUpdateOne("users", "accounts", filterUID, update)
+
+	return result
+}
+
+func MUpdateOne (
+	db string, 
+	table string, 
+	filter map[string]interface{}, 
+	update map[string]interface{},
+) *mongo.UpdateResult {
 
 	mongoURI := os.Getenv("MONGO_URI")
 
@@ -98,11 +125,15 @@ func MUpdateOne (db string, table string, filter map[string]interface{}, update 
 
 	collection := client.Database(db).Collection(table)
 	
-	_, errUpdate := collection.UpdateOne(context.TODO(), filter, update)
+	result, errUpdate := collection.UpdateOne(context.TODO(), filter, update)
 
-	if err != nil {
+	
+	if errUpdate != nil {
+
 		log.Fatal(errUpdate)
 	}
+
+	return result
 }
 
 

@@ -23,7 +23,7 @@ func DeleteTokens (w http.ResponseWriter, r *http.Request) {
 	// Generate
 	uID, _ := primitive.ObjectIDFromHex(uRefId.Id)
 
-
+	// delete 
 	filter := map[string]interface{}{"_id": uID}
 
 	update := map[string]interface{}{
@@ -32,10 +32,18 @@ func DeleteTokens (w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	utils.MUpdateOne("users", "accounts", filter, update)
+	result := utils.MUpdateOne("users", "accounts", filter, update)
 
-	// send user
-	message := utils.Message(true, "success remove all tokens")
+	if result.MatchedCount == 0 {
 
-	utils.Respond(w, message)
+		message := utils.Message(false, "not found user")
+	
+		utils.Respond(w, message)	
+	} else {
+		
+		// send user
+		message := utils.Message(true, "success remove all tokens")
+	
+		utils.Respond(w, message)
+	}
 }

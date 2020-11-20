@@ -33,14 +33,14 @@ func GenerateTokens (w http.ResponseWriter, r *http.Request) {
 
 
 	// Save in DB as bycrypt hash
+	filter := map[string]interface{}{"_id": uObjectID}
+
 	newData := map[string]interface{}{
 		"id": generateObjectID,
 		"access": accessToken,
 		"refresh": hashRefresh,
 	}
 	
-	filter := map[string]interface{}{"_id": uObjectID}
-
 	update := map[string]interface{}{
 		"$push": map[string]interface{}{
 			"tokens": newData,
@@ -48,18 +48,26 @@ func GenerateTokens (w http.ResponseWriter, r *http.Request) {
 	}
 
 	// update token in DB
-	utils.MUpdateOne("users", "accounts", filter, update)
+	result := utils.MUpdateOne("users", "accounts", filter, update)
 	
 	
-	// Output tokens
-	type Tokens struct {
-		ID primitive.ObjectID
-		Access string
-		Refresh string
-	}
+	if result.MatchedCount == 0 {
 
-	tokens := Tokens{generateObjectID, accessToken, refreshToken}
-	
-	// send user
-	json.NewEncoder(w).Encode(tokens)
+		message := utils.Message(false, "user not found")
+
+		utils.Respond(w, message)
+	} else {
+
+		// Output tokens
+		type Tokens struct {
+			ID primitive.ObjectID
+			Access string
+			Refresh string
+		}
+
+		tokens := Tokens{generateObjectID, accessToken, refreshToken}
+		
+		// send user
+		json.NewEncoder(w).Encode(tokens)
+	}
 }
