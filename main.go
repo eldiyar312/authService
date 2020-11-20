@@ -1,7 +1,6 @@
 package main
 
 import (
-	tokens "authService/route/TGenerateById"
 	refresh "authService/route/TGenerateByRefreshT"
 	delete "authService/route/deleteRefreshT"
 	deleteTokens "authService/route/deleteTokens"
@@ -9,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	tokens "github.com/authService/token/route/TGenerateById"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
