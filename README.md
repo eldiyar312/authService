@@ -19,7 +19,8 @@ CORS alll
 {
     id: '512asdf',
     idTokens:'1234124',
-    refreshToken:'ZXl=='
+    refreshToken:'ZXl12sd1==',
+    accessToken: 'f32f23f2.23f23f21.23ff23f244'
 }
 </code>
 </pre>
