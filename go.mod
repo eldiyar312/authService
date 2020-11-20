@@ -1,4 +1,4 @@
-module ginhub.com/authService/token
+module github.com/authService/token
 
 go 1.15
 
