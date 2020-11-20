@@ -3,6 +3,7 @@ package TGenerateByRefreshT
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/authService/token/utils"
 
@@ -14,75 +15,100 @@ func Refreshing (w http.ResponseWriter, r *http.Request) {
 
 	type user struct {
 		Id string
+		IdTokens string
 		RefreshToken string
-		IdRefreshToken string
+		AccessToken string
 	}
 
-	var uRef user
+	var uTokens user
 
-	json.NewDecoder(r.Body).Decode(&uRef)
-
+	json.NewDecoder(r.Body).Decode(&uTokens)
 	
-	// Generating
-	generateObjectID := primitive.NewObjectID()
+	match := checkRefreshT(uTokens.AccessToken, uTokens.RefreshToken)
 
-	uID, _ := primitive.ObjectIDFromHex(uRef.Id)
-	
-	uRefID, _ := primitive.ObjectIDFromHex(uRef.IdRefreshToken)
+	if !match {
 
-	// Генерируем токены, в зависимости от токенов
-	accessToken := utils.AccessTokenGenerate(uRef.RefreshToken)
+		message := utils.Message(false, "access or refresh token not correct")
 
-	refreshToken := utils.RefreshTokenGenerate(accessToken)
-
-	hashRefresh, _ := utils.HashPassword(refreshToken)
-	
-
-	// Save in DB as bycrypt hash
-	filterUID := map[string]interface{}{"_id": uID}
-
-	newData := map[string]interface{}{
-		"id": generateObjectID,
-		"access": accessToken,
-		"refresh": hashRefresh,
-	}
-
-	update := map[string]interface{}{
-		"$push": map[string]interface{}{
-			"tokens": newData,
-		},
-	}
-
-	// create new access and refresh tokens in DB
-	resultUpdate := utils.MUpdateOne("users", "accounts", filterUID, update)
-
-	if resultUpdate.MatchedCount == 0 {
-
-		message := utils.Message(false, "not found user")
-		
 		utils.Respond(w, message)
 	} else {
+
+		// Generating
+		generateObjectID := primitive.NewObjectID()
+	
+		uID, _ := primitive.ObjectIDFromHex(uTokens.Id)
 		
-		// delete this user refresh token (uRefID)
-		resultDelete := utils.DeleteRefresh(uID, uRefID)
+		IDTokens, _ := primitive.ObjectIDFromHex(uTokens.IdTokens)
+	
+		// Генерируем токены, в зависимости от токенов
+		const duration = time.Minute * 10
+	
+		accessToken := utils.AccessTokenGenerate(uTokens.RefreshToken, duration)
+	
+		refreshToken := utils.RefreshTokenGenerate(accessToken)
+	
+		hashRefresh, _ := utils.HashPassword(refreshToken)
 		
-		if resultDelete.MatchedCount == 0 {
-			
-			message := utils.Message(false, "not found token")
+	
+		// Save in DB as bycrypt hash
+		filterUID := map[string]interface{}{"_id": uID}
+	
+		newData := map[string]interface{}{
+			"id": generateObjectID,
+			"access": accessToken,
+			"refresh": hashRefresh,
+		}
+	
+		update := map[string]interface{}{
+			"$push": map[string]interface{}{
+				"tokens": newData,
+			},
+		}
+	
+		// create new access and refresh tokens in DB
+		resultUpdate := utils.MUpdateOne("users", "accounts", filterUID, update)
+	
+		if resultUpdate.MatchedCount == 0 {
+	
+			message := utils.Message(false, "not found user")
 			
 			utils.Respond(w, message)
 		} else {
-	
-			// send user
-			type Tokens struct {
-				ID primitive.ObjectID
-				Access string
-				Refresh string
+			
+			// delete this user refresh token (uRefID)
+			resultDelete := utils.DeleteRefresh(uID, IDTokens)
+			
+			if resultDelete.MatchedCount == 0 {
+				
+				message := utils.Message(false, "not found token")
+				
+				utils.Respond(w, message)
+			} else {
+		
+				// send user
+				type Tokens struct {
+					ID primitive.ObjectID
+					Access string
+					Refresh string
+					Duration time.Duration
+				}
+		
+				tokens := Tokens{generateObjectID, accessToken, refreshToken, duration}
+		
+				json.NewEncoder(w).Encode(tokens)
 			}
-	
-			tokens := Tokens{generateObjectID, accessToken, refreshToken}
-	
-			json.NewEncoder(w).Encode(tokens)
 		}
+	}
+}
+
+// проверяем, тот ли refresh token который выдан вместе с access token
+func checkRefreshT (access string, refresh string) bool {
+	
+	refreshToken := utils.RefreshTokenGenerate(access)
+
+	if refresh == refreshToken {
+		return true
+	} else {
+		return false
 	}
 }

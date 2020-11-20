@@ -18,7 +18,7 @@ CORS alll
 <code>
 {
     id: '512asdf',
-    idRefreshToken:'1234124',
+    idTokens:'1234124',
     refreshToken:'ZXl=='
 }
 </code>

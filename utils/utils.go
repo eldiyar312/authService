@@ -30,7 +30,7 @@ func Respond(w http.ResponseWriter, data map[string] interface{})  {
 }
 
 
-func AccessTokenGenerate (something string) string {
+func AccessTokenGenerate (something string, duration time.Duration) string {
 
 	atClaims := jwt.MapClaims{}
 
@@ -38,7 +38,7 @@ func AccessTokenGenerate (something string) string {
 
 	atClaims["something"] = something
 
-	atClaims["exp"] = time.Now().Add(time.Minute * 10).Unix()
+	atClaims["exp"] = time.Now().Add(duration).Unix()
 
 	at := jwt.NewWithClaims(jwt.SigningMethodHS512, atClaims)
 

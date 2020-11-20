@@ -3,6 +3,7 @@ package TGenerateById
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/authService/token/utils"
 
@@ -19,9 +20,10 @@ func GenerateTokens (w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&uId)
 
+	const duration = time.Minute * 10
 
 	// Generate
-	accessToken := utils.AccessTokenGenerate(uId.Id)
+	accessToken := utils.AccessTokenGenerate(uId.Id, duration)
 
 	refreshToken := utils.RefreshTokenGenerate(accessToken)
 
@@ -63,9 +65,10 @@ func GenerateTokens (w http.ResponseWriter, r *http.Request) {
 			ID primitive.ObjectID
 			Access string
 			Refresh string
+			Duration time.Duration
 		}
 
-		tokens := Tokens{generateObjectID, accessToken, refreshToken}
+		tokens := Tokens{generateObjectID, accessToken, refreshToken, duration}
 		
 		// send user
 		json.NewEncoder(w).Encode(tokens)
