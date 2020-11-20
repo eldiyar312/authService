@@ -6,7 +6,7 @@ CORS alll
 <pre>
 <p>/api/token</p>
 <p>generatin access and refresh tokens by GUID(user id)</p>
-<code>{'id': "12345fwfsf"}</code>
+<code>{'id': '12345fwfsf'}</code>
 </pre>
 
 </br>
@@ -34,7 +34,7 @@ CORS alll
 <code>
 {
     'id': '5f12e12',
-    'refreshId': '12d'
+    'tokenId': '12d'
 }
 </code>
 </pre>
