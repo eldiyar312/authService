@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/authService/token/utils"
+	"authService/utils"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
