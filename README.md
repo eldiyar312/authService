@@ -6,7 +6,7 @@ CORS alll
 <pre>
 <p>/api/token</p>
 <p>generatin access and refresh tokens by GUID(user id)</p>
-<code>{id: "12345fwfsf"}</code>
+<code>{'id': "12345fwfsf"}</code>
 </pre>
 
 </br>
@@ -17,10 +17,10 @@ CORS alll
 <p>generatin new access and refresh tokens by refresh token</p>
 <code>
 {
-    id: '512asdf',
-    idTokens:'1234124',
-    refreshToken:'ZXl12sd1==',
-    accessToken: 'f32f23f2.23f23f21.23ff23f244'
+    'id': '512asdf',
+    'idTokens':'1234124',
+    'refreshToken':'ZXl12sd1==',
+    'accessToken': 'f32f23f2.23f23f21.23ff23f244'
 }
 </code>
 </pre>
@@ -33,8 +33,8 @@ CORS alll
 <p>remove refresh token</p>
 <code>
 {
-    id: '5f12e12',
-    refreshId: '12d'
+    'id': '5f12e12',
+    'refreshId': '12d'
 }
 </code>
 </pre>
@@ -47,7 +47,7 @@ CORS alll
 <p>remove all refresh token for a specific user</p>
 <code>
 {
-    id: '5fb62112'
+    'id': '5fb62112'
 }
 </code>
 </pre>
