@@ -1,4 +1,4 @@
-package TGenerateById
+package auth
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GenerateTokens (w http.ResponseWriter, r *http.Request) {
+func TGenerateById (w http.ResponseWriter, r *http.Request) {
 	
 	type user struct {
 		Id string

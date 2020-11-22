@@ -1,4 +1,4 @@
-package deleteTokens
+package auth
 
 import (
 	"encoding/json"

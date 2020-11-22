@@ -6,11 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	tokens "github.com/authService/token/route/TGenerateById"
-	refresh "github.com/authService/token/route/TGenerateByRefreshT"
-	delete "github.com/authService/token/route/deleteRefreshT"
-	deleteTokens "github.com/authService/token/route/deleteTokens"
-	"github.com/authService/token/route/home"
+	"github.com/authService/token/route/auth"
+	"github.com/authService/token/route/pages"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -33,11 +30,11 @@ func main () {
 
 
     // ROUTES
-    router.HandleFunc("/", home.RespondDoc).Methods("GET")
-    router.HandleFunc("/api/token", tokens.GenerateTokens).Methods("POST")
-    router.HandleFunc("/api/refresh", refresh.Refreshing).Methods("POST")
-    router.HandleFunc("/api/delete/refresh", delete.DeleteRefreshT).Methods("POST")
-    router.HandleFunc("/api/delete/all/refresh", deleteTokens.DeleteTokens).Methods("POST")
+    router.HandleFunc("/", pages.RespondDoc).Methods("GET")
+    router.HandleFunc("/api/token", auth.TGenerateById).Methods("POST")
+    router.HandleFunc("/api/refresh", auth.TGenerateByrefreshT).Methods("POST")
+    router.HandleFunc("/api/delete/refresh", auth.DeleteRefreshT).Methods("POST")
+    router.HandleFunc("/api/delete/all/refresh", auth.DeleteTokens).Methods("POST")
 
 
     // CORS

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -74,7 +75,7 @@ func CheckPasswordHash(password, hash string) bool {
 // delete refresh token для того чтобы запретить повторное использование )
 func DeleteRefresh (
 	uID primitive.ObjectID,
-	uRefID primitive.ObjectID,
+	IDTokens primitive.ObjectID,
 ) *mongo.UpdateResult {
 
 	filterUID := map[string]interface{}{"_id": uID}
@@ -82,7 +83,7 @@ func DeleteRefresh (
 	update := map[string]interface{}{
 		"$pull": map[string]interface{}{
 			"tokens": map[string]interface{}{
-				"id": uRefID,
+				"id": IDTokens,
 			},
 		},
 	}
@@ -96,8 +97,8 @@ func DeleteRefresh (
 func MUpdateOne (
 	db string, 
 	table string, 
-	filter map[string]interface{}, 
-	update map[string]interface{},
+	filter interface{}, 
+	update interface{},
 ) *mongo.UpdateResult {
 
 	mongoURI := os.Getenv("MONGO_URI")
@@ -125,8 +126,8 @@ func MUpdateOne (
 
 	collection := client.Database(db).Collection(table)
 	
-	result, errUpdate := collection.UpdateOne(context.TODO(), filter, update)
 
+	result, errUpdate := collection.UpdateOne(context.TODO(), filter, update)
 	
 	if errUpdate != nil {
 
@@ -134,6 +135,52 @@ func MUpdateOne (
 	}
 
 	return result
+}
+
+
+func MFingOneUpdateOne (
+	db string, 
+	table string, 
+	filter interface{}, 
+	update interface{},
+) (bson.M, error) {
+
+	mongoURI := os.Getenv("MONGO_URI")
+
+    client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+
+	if err != nil {
+        log.Fatal(err)
+    }
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	err = client.Connect(ctx)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer client.Disconnect(ctx)
+
+	err = client.Ping(ctx, readpref.Primary())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	collection := client.Database(db).Collection(table)
+	
+
+	result := collection.FindOneAndUpdate(context.TODO(), filter, update)
+
+	if result.Err() != nil {
+		return nil, result.Err()
+	}
+
+	doc := bson.M{}
+	decodeErr := result.Decode(&doc)
+
+	return doc, decodeErr
 }
 
 
