@@ -40,9 +40,9 @@ func TGenerateByrefreshT (w http.ResponseWriter, r *http.Request) {
 		
 		
 		// delete this user refresh token
-		resultDelete := utils.DeleteRefresh(uID, IDTokens)
+		resultDelete := DeleteRefreshToken(uID, IDTokens)
 
-		if resultDelete.MatchedCount == 0 {
+		if resultDelete.ModifiedCount == 0 {
 	
 			message := utils.Message(false, "not found user or dont correct id tokens")
 			

@@ -10,8 +10,6 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -72,27 +70,7 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-// delete refresh token для того чтобы запретить повторное использование )
-func DeleteRefresh (
-	uID primitive.ObjectID,
-	IDTokens primitive.ObjectID,
-) *mongo.UpdateResult {
 
-	filterUID := map[string]interface{}{"_id": uID}
-
-	update := map[string]interface{}{
-		"$pull": map[string]interface{}{
-			"tokens": map[string]interface{}{
-				"id": IDTokens,
-			},
-		},
-	}
-	
-
-	result := MUpdateOne("users", "accounts", filterUID, update)
-
-	return result
-}
 
 func MUpdateOne (
 	db string, 
@@ -138,50 +116,54 @@ func MUpdateOne (
 }
 
 
-func MFingOneUpdateOne (
-	db string, 
-	table string, 
-	filter interface{}, 
-	update interface{},
-) (bson.M, error) {
+// func MFindOneAndUpdate (
+// 	db string, 
+// 	table string, 
+// 	filter interface{}, 
+// 	update interface{},
+// ) (bson.M, error) {
 
-	mongoURI := os.Getenv("MONGO_URI")
+// 	mongoURI := os.Getenv("MONGO_URI")
 
-    client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+//     client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 
-	if err != nil {
-        log.Fatal(err)
-    }
+// 	if err != nil {
+//         log.Fatal(err)
+//     }
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+// 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
-	err = client.Connect(ctx)
+// 	err = client.Connect(ctx)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	defer client.Disconnect(ctx)
+// 	defer client.Disconnect(ctx)
 
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	err = client.Ping(ctx, readpref.Primary())
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	collection := client.Database(db).Collection(table)
+// 	collection := client.Database(db).Collection(table)
 	
 
-	result := collection.FindOneAndUpdate(context.TODO(), filter, update)
+// 	result := collection.FindOneAndUpdate(
+// 		context.TODO(), 
+// 		filter, 
+// 		update,
+// 	)
 
-	if result.Err() != nil {
-		return nil, result.Err()
-	}
+// 	if result.Err() != nil {
+// 		return nil, result.Err()
+// 	}
 
-	doc := bson.M{}
-	decodeErr := result.Decode(&doc)
+// 	doc := bson.M{}
+// 	decodeErr := result.Decode(&doc)
 
-	return doc, decodeErr
-}
+// 	return doc, decodeErr
+// }
 
 
 // func MFindOne (db string, table string, filter map[string]interface{}) map[string]interface{} {

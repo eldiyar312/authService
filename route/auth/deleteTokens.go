@@ -12,27 +12,19 @@ import (
 
 func DeleteTokens (w http.ResponseWriter, r *http.Request) {
 
-	type user struct {
+	type User struct {
 		Id string
 	}
 
-	var uRefId user
+	var user User
 
-	json.NewDecoder(r.Body).Decode(&uRefId)
+	json.NewDecoder(r.Body).Decode(&user)
 	
 	// Generate
-	uID, _ := primitive.ObjectIDFromHex(uRefId.Id)
+	uID, _ := primitive.ObjectIDFromHex(user.Id)
 
 	// delete 
-	filter := map[string]interface{}{"_id": uID}
-
-	update := map[string]interface{}{
-		"$pull": map[string]interface{}{
-			"tokens": map[string]interface{}{},
-		},
-	}
-
-	result := utils.MUpdateOne("users", "accounts", filter, update)
+	result := DeleteUserAllTokens(uID)
 
 	if result.MatchedCount == 0 {
 
